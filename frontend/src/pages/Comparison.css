@@ -1,0 +1,98 @@
+.comparison-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.headline-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.metric-box {
+  padding: 32px 24px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.2s ease;
+}
+
+.metric-box:hover {
+  transform: translateY(-2px);
+}
+
+.metric-box.baseline {
+  background-color: var(--color-bg-card);
+  border-color: var(--color-border);
+}
+
+.metric-box.baseline .metric-value {
+  color: var(--color-text-secondary);
+}
+
+.metric-box.nova {
+  background-color: var(--color-accent-light);
+  border-color: var(--color-accent);
+}
+
+.metric-box.nova .metric-value {
+  color: var(--color-accent);
+}
+
+.metric-box.delta {
+  background-color: var(--color-success-light);
+  border-color: var(--color-success);
+}
+
+.metric-box.delta .metric-value {
+  color: var(--color-success);
+}
+
+.metric-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.metric-box.nova .metric-label {
+  color: var(--color-accent-hover);
+}
+
+.metric-box.delta .metric-label {
+  color: var(--color-success);
+}
+
+.metric-value {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.metric-sub {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+}
+
+.delta-text {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.comparison-layout {
+  display: flex;
+  gap: 24px;
+}
+
+.flex-2 { flex: 2; }
+.flex-3 { flex: 3; }
+
+.success-text {
+  color: var(--color-success) !important;
+  font-weight: 600;
+}

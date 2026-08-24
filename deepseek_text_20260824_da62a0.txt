@@ -1,0 +1,136 @@
+
+### 6.1 Detailed Data Flow
+
+1. **Ingestion**:
+   - **Real‑time**: Webhooks from Razorpay for `payment.failed`, `subscription.charge.failed`, `invoice.past_due`.
+   - **Batch**: Daily cron job to pull abandoned carts (via Razorpay Orders API with status `created` > 1 hour).
+2. **Feature Store**: PostgreSQL tables storing aggregated transaction history per user (90 days retention) – used for model features.
+3. **Detection**: Rule‑based triggers push events to the diagnosis queue (e.g., payment failed ≥ 2 times, or cart abandoned > 1 hour).
+4. **Diagnosis**: ML model predicts root cause. If confidence ≥ 0.7, proceed; else fallback to generic retry and log for manual review.
+5. **Decision Engine**: Looks up action plan from a config table (YAML or DB) that can be updated dynamically by merchants.
+6. **Orchestrator**: Schedules actions with rate limiting, idempotency (same transaction not acted on twice), and retry semantics for the action itself (network failures).
+7. **Execution**: Calls external services:
+   - WhatsApp Business API
+   - SendGrid / Amazon SES for email
+   - Twilio for voice calls
+   - Razorpay API for direct retry
+8. **Logging & Metrics**: Writes every step to audit DB (PostgreSQL) and pushes aggregated metrics to Prometheus.
+
+---
+
+## 7. Technology Stack (Production‑Grade)
+
+| Layer | Technology | Why |
+|-------|------------|-----|
+| **Frontend** | React + TypeScript, Tailwind CSS, Chart.js | Fast, type‑safe, beautiful dashboard with charts. |
+| **Backend API** | Python 3.10+ with FastAPI | High performance, automatic OpenAPI docs, async support. |
+| **ML / AI** | Scikit‑learn / XGBoost for classification; LangChain for LLM‑generated content (optional) | Battle‑tested for tabular data; LLM for personalized copy. |
+| **Database (Audit, Users)** | PostgreSQL (with TimescaleDB extension for time‑series) | ACID compliance, robust, supports time‑series queries. |
+| **Cache / Queue** | Redis (for Celery broker and result backend) | Fast, reliable, widely used. |
+| **Async Workers** | Celery | Distributed task queue for recovery actions. |
+| **Monitoring** | Prometheus + Grafana | Real‑time metrics and alerts. |
+| **External Integrations** | Razorpay API, WhatsApp Business API, Twilio, SendGrid | All production‑grade services. |
+| **Deployment** | Docker + Docker Compose (for local); Kubernetes (for production) | Portable, scalable. |
+
+---
+
+## 8. Implementation Plan (Development Phases)
+
+### Phase 0 – Setup (Day 1)
+- Initialize Git repo with `frontend/` and `backend/` folders.
+- Set up Docker Compose with PostgreSQL, Redis.
+- Create virtual environment and install dependencies.
+
+### Phase 1 – Data Ingestion & Storage (Day 1–2)
+- Build FastAPI endpoints to receive webhooks from Razorpay (using a test API key).
+- Create database models (SQLAlchemy) for `transactions`, `users`, `audit_logs`, `recovery_actions`.
+- Write scheduled tasks (Celery beat) to pull abandoned carts and overdue invoices.
+
+### Phase 2 – ML Model for Root‑Cause Diagnosis (Day 2–3)
+- Generate synthetic dataset (or use Razorpay’s sandbox logs) with labelled failure reasons.
+- Train XGBoost classifier; save model as `.pkl`.
+- Build a prediction endpoint `/diagnose` that accepts transaction features and returns root cause + confidence.
+
+### Phase 3 – Decision Engine & Orchestrator (Day 3–4)
+- Design a config table (in DB) mapping `root_cause` → `action_sequence` (e.g., `[{type: 'whatsapp', template: 'retry_link'}, {type: 'email', delay_minutes: 10}]`).
+- Build a Celery task that consumes events from Redis, calls the diagnosis model, looks up the action plan, and schedules sub‑tasks.
+- Implement idempotency (using `transaction_id` as lock key in Redis).
+
+### Phase 4 – Execution Layer (Day 4)
+- Build adapters for:
+  - WhatsApp Business API (send template messages)
+  - Email (SendGrid)
+  - Razorpay API (direct retry via `payment.create` with new token)
+- Implement stopping rules (check counters in Redis before each action).
+
+### Phase 5 – Audit Trail & Metrics (Day 5)
+- Log every step to `audit_logs` table.
+- Write Prometheus metrics: `recovery_attempts_total`, `recovered_amount_total`, `recovery_success_rate`.
+- Build a simple metrics endpoint `/metrics` for Prometheus.
+
+### Phase 6 – Dashboard (Day 5–6)
+- Build React frontend with:
+  - Summary cards (at‑risk, recovered, recovery rate)
+  - Breakdown bar chart (recovery by root cause)
+  - Table of recent recovery attempts with full audit trail (expandable)
+  - Filter by date range, merchant (if multi‑tenant)
+
+### Phase 7 – Testing & Polish (Day 6–7)
+- Write unit tests for model, decision engine, and orchestrator.
+- Write integration tests using `pytest` with a test Razorpay sandbox.
+- Prepare a demo script (5 min) walking through: detection → diagnosis → action → recovery → audit trail.
+
+---
+
+## 9. Dashboard Mockup (Key Views)
+
+1. **Overview Page**:
+   - Total At‑Risk Revenue (₹) – past 7 days
+   - Total Recovered (₹) – past 7 days
+   - Recovery Rate (%) – gauge chart
+   - Top 3 root causes – donut chart
+
+2. **Recovery Logs**:
+   - Table with columns: Time, Transaction ID, Root Cause, Action, Result, Audit Trail (button)
+   - Clicking “Audit Trail” opens a modal with the full JSON log.
+
+3. **Strategy Performance**:
+   - Bar chart showing ROI per channel (WhatsApp, Email, Voice, Retry)
+   - Helps merchants optimise their recovery mix.
+
+---
+
+## 10. Compliance & Ethics
+
+- **Defense‑only**: Nova only recovers revenue through legitimate, consented channels. It never manipulates users or uses deceptive tactics.
+- **Opt‑out**: Every communication includes a clear opt‑out mechanism (e.g., “Reply STOP to unsubscribe”).
+- **Stopping rules**: Hard limits on attempts and daily frequency to avoid harassment.
+- **Audit readiness**: Every action is logged and explainable – matches Razorpay’s compliance bar.
+
+---
+
+## 11. Why Not the Other Tracks? (Quick Comparison)
+
+| Track | Why Nova is better for this hackathon & job goal |
+|-------|--------------------------------------------------|
+| **Track 01 (Agentic Commerce)** | Relies on evolving protocols like UAP – unstable for a hackathon; hard to demo a closed loop. |
+| **Track 02 (AI Risk Manager)** | Razorpay already has deep internal projects here; “defense‑only” limits creativity. |
+| **Track 04 (AI Finance Controller)** | More about automation than direct revenue recovery – less impactful for a business pitch. |
+| **Track 05 (Open Track)** | Open is broad; Track 03 gives you a clear, measurable bar to hit, which is exactly what judges want. |
+
+---
+
+## 12. Final Pitch / Conclusion
+
+**Nova is not a toy project.** It is a production‑ready, commercially viable AI agent that:
+
+- Directly increases Razorpay’s merchant revenue (reducing churn and increasing transaction success).
+- Fits perfectly into Razorpay’s Agent Studio vision – a pluggable, intelligent agent.
+- Demonstrates full‑stack engineering, ML, and product thinking – exactly what Razorpay looks for in new hires.
+- Has a clear, honest, and auditable metric bar – no cherry‑picking, just real results.
+
+**With Nova, you don’t just build a project – you build a business case.**
+
+---
+
+*Ready to start coding. This spec is your single source of truth.*
