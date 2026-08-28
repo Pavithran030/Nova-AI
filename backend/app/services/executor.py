@@ -12,6 +12,7 @@ def execute_action(action_type: str, entity_type: str, entity_id: str) -> dict:
         "immediate_retry_exponential": ("api_retry", "Retry with exponential backoff"),
         "checkout_nudge": ("sms", "Checkout reminder SMS sent with resume link"),
         "b2b_follow_up": ("whatsapp", "Payment follow-up sent via WhatsApp"),
+        "ESCALATE_TO_HUMAN": ("human_queue", "Flagged for human review — classifier confidence below operating threshold"),
     }
     channel, content = channel_map.get(action_type, ("api", "Default action executed"))
     return {"channel": channel, "content_sent": content}

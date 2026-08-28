@@ -28,6 +28,22 @@ backend/nova.db
 backend/app/ml/models/*.joblib
 backend/app/ml/models/*.png
 
+# Python tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# ML Pipeline — regenerable synthetic data & trained model artifacts
+# (metadata *.json files are kept tracked — small, human-readable, and
+# useful for the audit trail; only the large/binary outputs are ignored)
+ml_pipeline/data/
+ml_pipeline/artifacts/*.joblib
+ml_pipeline/artifacts/*.png
+*.pkl
+
 # Node / React / Frontend
 node_modules/
 frontend/node_modules/

@@ -1,0 +1,86 @@
+{
+  "trained_at": "2026-08-28T18:38:37.774228",
+  "model_type": "XGBClassifier",
+  "classes": [
+    "BANK_TIMEOUT",
+    "CARD_EXPIRED",
+    "INSUFFICIENT_FUNDS",
+    "MANDATE_REVOKED",
+    "NETWORK_ERROR",
+    "RISK_DECLINE"
+  ],
+  "features": [
+    "day_of_month",
+    "hour_of_day",
+    "retry_count",
+    "is_mandate",
+    "mandate_age_days",
+    "card_age_days",
+    "subscription_tenure_days",
+    "customer_historical_success_rate",
+    "amount",
+    "amount_vs_customer_avg",
+    "network_quality_score",
+    "device_is_new",
+    "has_error_description"
+  ],
+  "n_train": 4000,
+  "n_val": 1000,
+  "n_holdout": 1000,
+  "best_params": {
+    "subsample": 0.8,
+    "reg_lambda": 4.0,
+    "reg_alpha": 1.0,
+    "max_depth": 3,
+    "learning_rate": 0.02,
+    "colsample_bytree": 0.7
+  },
+  "best_iteration": 372,
+  "baseline_macro_f1": 0.1545,
+  "train_macro_f1": 0.4309,
+  "val_macro_f1": 0.3175,
+  "holdout_macro_f1": 0.3348,
+  "reliability_curve": [
+    {
+      "threshold": 0.2,
+      "rows": 991,
+      "accuracy": 0.3401
+    },
+    {
+      "threshold": 0.25,
+      "rows": 860,
+      "accuracy": 0.3605
+    },
+    {
+      "threshold": 0.3,
+      "rows": 618,
+      "accuracy": 0.3803
+    },
+    {
+      "threshold": 0.35,
+      "rows": 415,
+      "accuracy": 0.412
+    },
+    {
+      "threshold": 0.4,
+      "rows": 266,
+      "accuracy": 0.4549
+    },
+    {
+      "threshold": 0.5,
+      "rows": 97,
+      "accuracy": 0.5876
+    },
+    {
+      "threshold": 0.6,
+      "rows": 22,
+      "accuracy": 0.6364
+    },
+    {
+      "threshold": 0.7,
+      "rows": 3,
+      "accuracy": 0.6667
+    }
+  ],
+  "recommended_confidence_threshold": 0.35
+}

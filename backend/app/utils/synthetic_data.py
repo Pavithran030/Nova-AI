@@ -5,7 +5,7 @@ from app.models.transaction import Transaction
 from app.models.invoice import Invoice
 from app.models.policy_config import PolicyConfig
 from app.models.mandate import Mandate
-from app.services.scorer import calculate_payment_probability, expected_recovery_value
+from app.services.scorer import calculate_payment_probability_ml, expected_recovery_value
 from datetime import datetime, timedelta
 import random
 
@@ -74,9 +74,13 @@ def generate_all_synthetic_data(db: Session):
             db.add(tx)
         elif i <= 70:
             days_overdue = random.randint(1, 30)
-            prob = calculate_payment_probability(on_time, days_overdue, random.randint(0, 3), random.randint(1, 20))
+            broken_promises = random.randint(0, 3)
+            history_len = random.randint(1, 20)
+            prob = calculate_payment_probability_ml(
+                days_overdue, amount, on_time, broken_promises, history_len, 0
+            )
             expected_val = expected_recovery_value(amount, prob)
-            
+
             inv = Invoice(
                 merchant_id=merchant.id,
                 customer_id=customer_id,
@@ -84,6 +88,7 @@ def generate_all_synthetic_data(db: Session):
                 due_date=created_at,
                 status="overdue",
                 days_overdue=days_overdue,
+                broken_promise_count=broken_promises,
                 payment_probability=prob,
                 expected_recovery_value=expected_val,
                 created_at=created_at

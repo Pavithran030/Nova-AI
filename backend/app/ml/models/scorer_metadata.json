@@ -1,0 +1,21 @@
+{
+  "trained_at": "2026-08-28T18:38:48.507514",
+  "model_type": "LogisticRegression",
+  "features": [
+    "days_overdue",
+    "invoice_amount",
+    "customer_ontime_rate",
+    "prior_broken_promises",
+    "payment_history_length",
+    "followup_count"
+  ],
+  "selected_C": 1.0,
+  "n_train": 2400,
+  "n_val": 600,
+  "n_holdout": 600,
+  "baseline_brier": 0.4883,
+  "val_brier": 0.2134,
+  "val_auc": 0.7185,
+  "holdout_brier": 0.2089,
+  "holdout_auc": 0.7382
+}
