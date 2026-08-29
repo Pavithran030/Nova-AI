@@ -45,6 +45,11 @@
   color: var(--color-text-secondary);
 }
 
+.actor-baseline {
+  background-color: #FEF3E2;
+  color: var(--color-warning);
+}
+
 .npci-valid {
   color: var(--color-success);
   font-size: 12px;

@@ -36,7 +36,17 @@ def process_item(db: Session, entity_type: str, entity_id: str, actor="agent"):
         action.outcome = "SUCCESS" if actor == "agent" else "BASELINE_SUCCESS"
     else:
         action.outcome = "FAILED" if actor == "agent" else "BASELINE_FAILED"
-        
+
+    # Only the real agent run updates live entity state — a baseline run is
+    # a shadow comparison for reporting and must never mutate actual data.
+    if actor == "agent" and action.outcome == "SUCCESS":
+        if entity_type == "transaction" and tx is not None:
+            tx.status = "recovered"
+        elif entity_type == "invoice":
+            inv = db.query(Invoice).filter(Invoice.id == entity_id).first()
+            if inv:
+                inv.status = "paid"
+
     db.commit()
     db.refresh(action)
     
