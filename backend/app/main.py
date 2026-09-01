@@ -24,3 +24,7 @@ app.include_router(simulate.router)
 @app.get("/")
 def root():
     return {"message": "Welcome to Nova API"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
