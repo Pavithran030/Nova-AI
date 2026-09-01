@@ -11,6 +11,9 @@ class RecoveryAction(Base):
     root_cause = Column(String(100), nullable=True)
     root_cause_confidence = Column(Float, nullable=True)
     action_type = Column(String(100), nullable=False)
+    actor = Column(String(20), default="agent")  # 'agent' or 'baseline' -- lets daily-cap
+    # counting and reporting scope correctly per actor, since two shadow runs
+    # (agent vs baseline) over the same customer/day must not share one budget.
     channel = Column(String(50), nullable=True)
     content_sent = Column(String, nullable=True)
     decided_at = Column(DateTime, default=func.now())

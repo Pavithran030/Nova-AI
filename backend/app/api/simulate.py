@@ -25,7 +25,7 @@ def generate_batch(db: Session = Depends(get_db)):
 
 @router.post("/run-baseline")
 def run_baseline(db: Session = Depends(get_db)):
-    db.query(RecoveryAction).filter(RecoveryAction.outcome.like("BASELINE%")).delete()
+    db.query(RecoveryAction).filter(RecoveryAction.actor == "baseline").delete()
     db.query(AuditLog).filter(AuditLog.actor == "baseline").delete()
     db.commit()
     
@@ -44,7 +44,7 @@ def run_baseline(db: Session = Depends(get_db)):
 
 @router.post("/run-agent")
 def run_agent(db: Session = Depends(get_db)):
-    db.query(RecoveryAction).filter(~RecoveryAction.outcome.like("BASELINE%")).delete()
+    db.query(RecoveryAction).filter(RecoveryAction.actor == "agent").delete()
     db.query(AuditLog).filter(AuditLog.actor == "agent").delete()
     db.commit()
     

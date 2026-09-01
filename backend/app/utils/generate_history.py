@@ -191,25 +191,31 @@ def generate_history(
         db.refresh(inv)
 
     # --- Run a large fraction through the REAL pipeline ---
+    # `now` is pinned to each entity's own simulated created_at, not real
+    # wall-clock time -- otherwise every daily-cap check during this bulk
+    # backfill would collapse onto today's real date regardless of which
+    # simulated day the record actually belongs to.
     processed = {"agent": 0, "baseline": 0, "skipped": 0}
     for tx in all_transactions:
         if random.random() > process_fraction:
             processed["skipped"] += 1
             continue
-        process_item(db, "transaction", tx.id, actor="agent")
+        decision_time = tx.created_at + timedelta(minutes=random.uniform(5, 90))
+        process_item(db, "transaction", tx.id, actor="agent", now=decision_time)
         processed["agent"] += 1
         if random.random() < baseline_fraction:
-            process_item(db, "transaction", tx.id, actor="baseline")
+            process_item(db, "transaction", tx.id, actor="baseline", now=decision_time)
             processed["baseline"] += 1
 
     for inv in all_invoices:
         if random.random() > process_fraction:
             processed["skipped"] += 1
             continue
-        process_item(db, "invoice", inv.id, actor="agent")
+        decision_time = inv.created_at + timedelta(days=random.uniform(0.1, 2))
+        process_item(db, "invoice", inv.id, actor="agent", now=decision_time)
         processed["agent"] += 1
         if random.random() < baseline_fraction:
-            process_item(db, "invoice", inv.id, actor="baseline")
+            process_item(db, "invoice", inv.id, actor="baseline", now=decision_time)
             processed["baseline"] += 1
 
     return {
