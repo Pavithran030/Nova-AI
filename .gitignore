@@ -25,7 +25,11 @@ venv.bak/
 *.sqlite
 *.sqlite3
 backend/nova.db
-backend/app/ml/models/*.joblib
+# NOTE: backend/app/ml/models/*.joblib is intentionally tracked, not
+# ignored, despite being a "regenerable" build artifact -- a hackathon
+# judge cloning this repo needs the trained classifier/scorer to actually
+# work without separately running the full ml_pipeline/ training
+# procedure first. Only exclude the plot images, which are cosmetic.
 backend/app/ml/models/*.png
 
 # Python tooling caches
