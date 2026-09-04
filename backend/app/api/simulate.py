@@ -7,6 +7,9 @@ from app.models.transaction import Transaction
 from app.models.invoice import Invoice
 from app.models.recovery_action import RecoveryAction
 from app.models.audit_log import AuditLog
+from app.models.mandate import Mandate
+from app.models.customer_feature import CustomerFeature
+from app.models.merchant import Merchant
 from datetime import datetime
 
 router = APIRouter(prefix="/simulate", tags=["simulate"])
@@ -18,6 +21,9 @@ def generate_batch(db: Session = Depends(get_db)):
     db.query(AuditLog).delete()
     db.query(Transaction).delete()
     db.query(Invoice).delete()
+    db.query(Mandate).delete()
+    db.query(CustomerFeature).delete()
+    db.query(Merchant).delete()
     db.commit()
     
     generate_all_synthetic_data(db)
